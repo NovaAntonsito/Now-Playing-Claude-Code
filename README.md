@@ -18,7 +18,7 @@ Windows only (uses PowerShell, Windows Core Audio and Global System Media Transp
 At the prompt of a Claude Code terminal session:
 
 ```
-/plugin install now-playing --marketplace NovaAntonsito/now-playing
+/plugin install now-playing --marketplace NovaAntonsito/Now-Playing-Claude-Code
 ```
 
 Answer `y` to add the marketplace, then pick a scope (user is the default).
@@ -26,7 +26,7 @@ Answer `y` to add the marketplace, then pick a scope (user is the default).
 From a shell:
 
 ```
-claude plugin install now-playing --marketplace NovaAntonsito/now-playing
+claude plugin install now-playing --marketplace NovaAntonsito/Now-Playing-Claude-Code
 ```
 
-In the desktop app, where `/plugin` does not run: click + next to the prompt box, then Plugins, Add marketplace with `NovaAntonsito/now-playing`, then Add plugin.
+In the desktop app, where `/plugin` does not run: click + next to the prompt box, then Plugins, Add marketplace with `NovaAntonsito/Now-Playing-Claude-Code`, then Add plugin.
