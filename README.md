@@ -9,6 +9,7 @@ A Claude Code mod that shows a mini bar visualizer and the song currently playin
 - Reads the track from Windows media controls (Spotify, browsers, any app that shows up there).
 - Bars follow the real output volume of your default audio device.
 - Hidden when nothing is playing; dimmed while paused.
+- Buttons: previous, play/pause, next, and shuffle / repeat when the playing app supports them.
 - `/np` toggles it on and off.
 
 Windows only (uses PowerShell, Windows Core Audio and Global System Media Transport Controls).

@@ -1,13 +1,14 @@
 import { atom, read, update } from 'claude-code'
-import type { Register } from 'claude-code'
+import type { EngineInterface, Register } from 'claude-code'
 
 import type { Track } from '../types'
-import { SCRIPT } from './script'
+import { SCRIPT, controlScript } from './script'
+import type { ControlAction } from './script'
 
 const NBARS = 16
 const GLYPHS = ' ▁▂▃▄▅▆▇█'
 
-const track = atom({ plugin: 'now-playing', key: 'track' } as const, null)
+const track = atom({ plugin: 'now-playing', key: 'track' } as const, null, { shape: 'track-2' })
 const bars = atom({ plugin: 'now-playing', key: 'bars' } as const, [])
 const isHidden = atom({ plugin: 'now-playing', key: 'isHidden' } as const, false)
 
@@ -21,24 +22,53 @@ function encodeUtf16Base64(s: string): string {
   return btoa(bin)
 }
 
+function powershell(script: string): string[] {
+  return ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encodeUtf16Base64(script)]
+}
+
+function parseTrack(parts: string[]): Track | null {
+  const [, status = 'none', title = '', artist = '', app = '', p = '0', n = '0', tg = '0', sh = '0', rp = '0', shOn = '', rpMode = ''] = parts
+  if (status === 'none' || !title) return null
+  return {
+    status, title, artist, app,
+    canPrev: p === '1', canNext: n === '1', canToggle: tg === '1',
+    canShuffle: sh === '1', canRepeat: rp === '1',
+    shuffle: shOn === 'True', repeat: rpMode || 'None',
+  }
+}
+
+let current: Track | null = null
+
+async function control($: EngineInterface, action: ControlAction) {
+  // Optimistic flip so the button reacts before the next poll.
+  if (current) {
+    const t: Track = current
+    const guess: Track =
+      action === 'toggle' ? { ...t, status: t.status === 'Playing' ? 'Paused' : 'Playing' }
+      : action === 'shuffle' ? { ...t, shuffle: !t.shuffle }
+      : action === 'repeat' ? { ...t, repeat: t.repeat === 'List' ? 'Track' : t.repeat === 'Track' ? 'None' : 'List' }
+      : t
+    current = guess
+    await update($, track, () => guess)
+  }
+  await $.process.run(powershell(controlScript(action)))
+}
+
 export const register: Register = on => {
   let peak = 0
   let lo = 1
   let hi = 0
   const levels: number[] = new Array(NBARS).fill(0)
   const weights: number[] = Array.from({ length: NBARS }, (_, i) => 0.55 + 0.45 * Math.sin((i / NBARS) * Math.PI))
-  let current: Track | null = null
 
   on('session.start', async ($, e, next) => {
     const started = await next(e)
 
     await $.command.register({ name: 'np', description: 'Mostrar u ocultar el visualizador de música' })
 
-    // Reader: a long-lived PowerShell child streaming "P\t<peak>" and "M\t<status>\t<title>\t<artist>\t<app>".
+    // Reader: a long-lived PowerShell child streaming "P\t<peak>" and "M\t<status>\t<title>\t...".
     void (async () => {
-      const child = $.process.spawn({
-        argv: ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encodeUtf16Base64(SCRIPT)],
-      })
+      const child = $.process.spawn({ argv: powershell(SCRIPT) })
       let buf = ''
       for await (const { stream, text } of child) {
         if (stream !== 'stdout') continue
@@ -50,11 +80,11 @@ export const register: Register = on => {
           if (parts[0] === 'P') {
             peak = Number(parts[1]) || 0
           } else if (parts[0] === 'M') {
-            const [, status = 'none', title = '', artist = '', app = ''] = parts
-            const found: Track | null = status === 'none' || !title ? null : { status, title, artist, app }
-            const changed = JSON.stringify(found) !== JSON.stringify(current)
-            current = found
-            if (changed) await update($, track, () => found)
+            const found = parseTrack(parts)
+            if (JSON.stringify(found) !== JSON.stringify(current)) {
+              current = found
+              await update($, track, () => found)
+            }
           }
         }
       }
@@ -89,15 +119,25 @@ export const register: Register = on => {
       return next(e)
     }
 
-    const { Box, Text } = $.ui.resolve(e)
+    const { Box, Text, Button } = $.ui.resolve(e)
     const b = await read($, bars)
     const playing = t.status === 'Playing'
     const viz = Array.from({ length: NBARS }, (_, i) => GLYPHS[Math.min(8, Math.max(playing ? 1 : 0, b[i] ?? 0))]).join('')
+    const repeatGlyph = t.repeat === 'Track' ? '🔂' : '🔁'
 
     return (
       <Box>
         <Text color={playing ? 'green' : undefined} dimColor={!playing}>{viz} </Text>
-        <Text dimColor={!playing}>{playing ? '♪ ' : '⏸ '}</Text>
+        {t.canPrev ? <Button key="prev" label="⏮" plain onPress={() => control($, 'prev')} /> : null}
+        <Text> </Text>
+        <Button key="toggle" label={playing ? '⏸' : '▶'} plain onPress={() => control($, 'toggle')} />
+        <Text> </Text>
+        {t.canNext ? <Button key="next" label="⏭" plain onPress={() => control($, 'next')} /> : null}
+        {t.canShuffle ? <Text> </Text> : null}
+        {t.canShuffle ? <Button key="shuffle" label="🔀" plain dimColor={!t.shuffle} onPress={() => control($, 'shuffle')} /> : null}
+        {t.canRepeat ? <Text> </Text> : null}
+        {t.canRepeat ? <Button key="repeat" label={repeatGlyph} plain dimColor={t.repeat === 'None'} onPress={() => control($, 'repeat')} /> : null}
+        <Text>  </Text>
         <Text bold dimColor={!playing}>{t.title}</Text>
         {t.artist ? <Text dimColor> — {t.artist}</Text> : null}
       </Box>
