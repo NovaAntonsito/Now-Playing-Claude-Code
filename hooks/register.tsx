@@ -123,20 +123,20 @@ export const register: Register = on => {
     const b = await read($, bars)
     const playing = t.status === 'Playing'
     const viz = Array.from({ length: NBARS }, (_, i) => GLYPHS[Math.min(8, Math.max(playing ? 1 : 0, b[i] ?? 0))]).join('')
-    const repeatGlyph = t.repeat === 'Track' ? '🔂' : '🔁'
+    const repeatLabel = t.repeat === 'Track' ? 'rep 1' : 'rep'
 
     return (
       <Box>
         <Text color={playing ? 'green' : undefined} dimColor={!playing}>{viz} </Text>
-        {t.canPrev ? <Button key="prev" label="⏮" plain onPress={() => control($, 'prev')} /> : null}
+        {t.canPrev ? <Button key="prev" label="|<" onPress={() => control($, 'prev')} /> : null}
         <Text> </Text>
-        <Button key="toggle" label={playing ? '⏸' : '▶'} plain onPress={() => control($, 'toggle')} />
+        <Button key="toggle" label={playing ? '||' : '>'} onPress={() => control($, 'toggle')} />
         <Text> </Text>
-        {t.canNext ? <Button key="next" label="⏭" plain onPress={() => control($, 'next')} /> : null}
+        {t.canNext ? <Button key="next" label=">|" onPress={() => control($, 'next')} /> : null}
         {t.canShuffle ? <Text> </Text> : null}
-        {t.canShuffle ? <Button key="shuffle" label="🔀" plain dimColor={!t.shuffle} onPress={() => control($, 'shuffle')} /> : null}
+        {t.canShuffle ? <Button key="shuffle" label="shuf" dimColor={!t.shuffle} onPress={() => control($, 'shuffle')} /> : null}
         {t.canRepeat ? <Text> </Text> : null}
-        {t.canRepeat ? <Button key="repeat" label={repeatGlyph} plain dimColor={t.repeat === 'None'} onPress={() => control($, 'repeat')} /> : null}
+        {t.canRepeat ? <Button key="repeat" label={repeatLabel} dimColor={t.repeat === 'None'} onPress={() => control($, 'repeat')} /> : null}
         <Text>  </Text>
         <Text bold dimColor={!playing}>{t.title}</Text>
         {t.artist ? <Text dimColor> — {t.artist}</Text> : null}
