@@ -1,33 +1,33 @@
 # now-playing
 
-A Claude Code mod that shows a mini bar visualizer and the song currently playing, in a row above the prompt.
+Un mod para Claude Code que muestra un mini visualizador de barras y la canción que está sonando, en una fila arriba del prompt.
 
 ```
-▃▅▇▆▄▂▅▇█▆▃▂▄▆▅▃ ♪ Let It Happen — Tame Impala
+▃▅▇▆▄▂▅▇█▆▃▂ [ |< ] [ || ] [ >| ]  Let It Happen — Tame Impala
 ```
 
-- Reads the track from Windows media controls (Spotify, browsers, any app that shows up there).
-- Bars follow the real output volume of your default audio device.
-- Hidden when nothing is playing; dimmed while paused.
-- Buttons: previous, play/pause, next, and shuffle / repeat when the playing app supports them.
-- `/np` toggles it on and off.
+- Lee la canción desde los controles multimedia de Windows (Spotify, el navegador o cualquier app que aparezca ahí).
+- Las barras siguen el volumen real que sale por tu dispositivo de audio.
+- Se oculta cuando no suena nada y se ve atenuado en pausa.
+- Botones: anterior, play/pausa, siguiente, y aleatorio / repetir cuando la app que suena los soporta.
+- `/np` lo muestra u oculta.
 
-Windows only (uses PowerShell, Windows Core Audio and Global System Media Transport Controls).
+Solo para Windows (usa PowerShell, Windows Core Audio y los Global System Media Transport Controls).
 
-## Install
+## Instalación
 
-At the prompt of a Claude Code terminal session:
+En el prompt de una sesión de Claude Code en la terminal:
 
 ```
 /plugin install now-playing --marketplace NovaAntonsito/Now-Playing-Claude-Code
 ```
 
-Answer `y` to add the marketplace, then pick a scope (user is the default).
+Respondé `y` para agregar el marketplace y después elegí el alcance (por defecto, usuario).
 
-From a shell:
+Desde una consola:
 
 ```
 claude plugin install now-playing --marketplace NovaAntonsito/Now-Playing-Claude-Code
 ```
 
-In the desktop app, where `/plugin` does not run: click + next to the prompt box, then Plugins, Add marketplace with `NovaAntonsito/Now-Playing-Claude-Code`, then Add plugin.
+En la app de escritorio, donde `/plugin` no funciona: hacé clic en + al lado del cuadro del prompt, después en Plugins, Add marketplace con `NovaAntonsito/Now-Playing-Claude-Code`, y por último Add plugin.
