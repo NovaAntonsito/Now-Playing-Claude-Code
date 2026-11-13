@@ -1,0 +1,5 @@
+{
+  "name": "now-playing",
+  "owner": { "name": "NovaAntonsito" },
+  "plugins": [{ "name": "now-playing", "source": "./" }]
+}

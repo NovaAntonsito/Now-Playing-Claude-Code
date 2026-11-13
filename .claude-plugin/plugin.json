@@ -1,0 +1,1 @@
+{ "name": "now-playing", "version": "0.1.0", "description": "Mini visualizador de barras y la musica que suena en Windows, arriba del prompt", "types": "./types/index.d.ts" }
